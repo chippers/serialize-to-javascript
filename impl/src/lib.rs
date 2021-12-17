@@ -72,6 +72,7 @@ pub fn default_template(attr: TokenStream, item: TokenStream) -> TokenStream {
     let name = item.ident;
     let (impl_generics, ty_generics, _) = item.generics.split_for_impl();
     quote!(
+        #item
         impl #impl_generics ::serialize_to_javascript::DefaultTemplate for #name #ty_generics {
             const RAW_TEMPLATE: &'static str = include_str!(#path);
         }

@@ -1,0 +1,22 @@
+[workspace]
+members = ["impl"]
+
+[package]
+name = "serialize-to-javascript"
+version = "0.1.0"
+authors = ["Chip Reed <chip@chip.sh>"]
+description = "Serialize a serde::Serialize item to a JavaScript literal template using serde_json"
+license = "MIT OR Apache-2.0"
+edition = "2018"
+rust-version = "1.31"
+
+[dependencies]
+serialize-to-javascript-impl = { version = "=0.1.0", path = "impl" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = ["raw_value"] }
+[dev-dependencies]
+anyhow = "1.0"
+ref-cast = "1.0"
+rustversion = "1.0"
+trybuild = { version = "1.0.49", features = ["diff"] }
+

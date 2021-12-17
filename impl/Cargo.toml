@@ -1,0 +1,16 @@
+[package]
+name = "serialize-to-javascript-impl"
+version = "0.1.0"
+authors = ["Chip Reed <chip@chip.sh>"]
+description = "Implementation detail of `serialize-to-javascript`"
+license = "MIT OR Apache-2.0"
+edition = "2018"
+rust-version = "1.31"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = "1.0"

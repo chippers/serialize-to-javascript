@@ -48,7 +48,7 @@ pub fn derive_template_data(item: TokenStream) -> TokenStream {
 
                         #replacements
 
-                        Ok(template.into())
+                        Ok(template.to_string())
                     }
                 }
             )

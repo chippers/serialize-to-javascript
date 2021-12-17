@@ -21,7 +21,6 @@ pub fn derive_template_data(item: TokenStream) -> TokenStream {
                     Some(ident) => {
                         let template_ident = quote::format_ident!("__TEMPLATE_{}__", ident);
                         replacements.append_all(quote!(
-                            let template: String = template.into();
                             let data: Serialized = NotYetSerialized(&self.#ident).try_into()?;
                             let template = template.replace(
                                 stringify!(#template_ident),
@@ -46,9 +45,11 @@ pub fn derive_template_data(item: TokenStream) -> TokenStream {
                         use ::serialize_to_javascript::private::NotYetSerialized;
                         use ::serialize_to_javascript::private::Serialized;
 
+                        let template: String = template.into();
+
                         #replacements
 
-                        Ok(template.to_string())
+                        Ok(template)
                     }
                 }
             )

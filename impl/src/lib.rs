@@ -69,7 +69,7 @@ pub fn derive_template_data(item: TokenStream) -> TokenStream {
 pub fn default_template(attr: TokenStream, item: TokenStream) -> TokenStream {
     let path = parse_macro_input!(attr as syn::LitStr);
     let item = parse_macro_input!(item as syn::DeriveInput);
-    let name = item.ident;
+    let name = item.ident.clone();
     let (impl_generics, ty_generics, _) = item.generics.split_for_impl();
     quote!(
         #item

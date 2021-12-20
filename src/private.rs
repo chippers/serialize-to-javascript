@@ -1,7 +1,11 @@
-use serde::Serialize;
-use serde_json::value::RawValue;
 use std::convert::TryFrom;
 
+use serde::Serialize;
+use serde_json::value::RawValue;
+
+use crate::{escape_json_parse, Options};
+
+/// Prevent (hidden, not impossible) implementation of crate traits outside this crate.
 pub trait Sealed {}
 
 /// A [`Serialize`] value that has yet to be serialized.
@@ -28,42 +32,7 @@ impl<'a, T: Serialize> TryFrom<NotYetSerialized<'a, T>> for Serialized {
 
 impl Serialized {
     /// Transform the serialized data into a valid JavaScript string.
-    pub fn into_javascript_string_literal(self) -> String {
-        escape_json_parse(&self.0)
+    pub fn into_javascript_string_literal(self, options: &Options) -> String {
+        escape_json_parse(&self.0, options)
     }
-}
-
-/// Transforms & escapes a JSON String -> JSON.parse('{json}')
-///
-/// Single quotes chosen because double quotes are already used in JSON. With single quotes, we only
-/// need to escape strings that include backslashes or single quotes. If we used double quotes, then
-/// there would be no cases that a string doesn't need escaping.
-///
-/// # Safety
-///
-/// The ability to safely escape JSON into a JSON.parse('{json}') relies entirely on 2 things.
-///
-/// 1. `serde_json`'s ability to correctly escape and format json into a string.
-/// 2. JavaScript engines not accepting anything except another unescaped, literal single quote
-///     character to end a string that was opened with it.
-fn escape_json_parse(json: &RawValue) -> String {
-    let json = json.get();
-
-    // 14 chars in JSON.parse('')
-    // todo: should we increase the 14 by x to allow x amount of escapes before another allocation?
-    let mut s = String::with_capacity(json.len() + 14);
-    s.push_str("JSON.parse('");
-
-    // insert a backslash before any backslash or single quote characters.
-    let mut last = 0;
-    for (idx, _) in json.match_indices(|c| c == '\\' || c == '\'') {
-        s.push_str(&json[last..idx]);
-        s.push('\\');
-        last = idx;
-    }
-
-    // finish appending the trailing characters that don't need escaping
-    s.push_str(&json[last..]);
-    s.push_str("')");
-    s
 }

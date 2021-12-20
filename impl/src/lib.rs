@@ -33,17 +33,19 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
             for field in data.fields {
                 match field.ident {
                     Some(ident) => {
-                        let templated_field_name = format!("__TEMPLATE_{}__", ident);
+                        let templated_field_name;
                         let lifetimes = item.generics.lifetimes();
 
                         // we expect self, template, and options bindings to exist
                         let data = if field.attrs.iter().any(|attr| attr.path.is_ident("raw")) {
+                            templated_field_name = format!("__RAW_{}__", ident);
                             let trait_check = trait_check(lifetimes,field.ty, quote!(::std::fmt::Display));
                             quote!(
                                 #trait_check
                                 let data: String = self.#ident.to_string();
                             )
                         } else {
+                            templated_field_name = format!("__TEMPLATE_{}__", ident);
                             let trait_check = trait_check(lifetimes, field.ty, quote!(::serialize_to_javascript::private::Serialize));
                             quote!(
                                 #trait_check

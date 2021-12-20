@@ -1,7 +1,8 @@
 //! Serialize [`serde::Serialize`] values to JavaScript.
 //!
 //! Templated names that are replaced inside templates are `__TEMPLATE_my_field__` where `my_field`
-//! is a field on a struct implementing [`Template`].
+//! is a field on a struct implementing [`Template`]. Raw value template names use
+//! `__RAW_my_field__`.
 //!
 //! ```rust
 //! use serialize_to_javascript::{Template, default_template};
@@ -49,12 +50,19 @@ pub struct Options {
 /// Due to the nature of templating variables, [tuple structs] are not allowed as their fields
 /// have no names. [Unit structs] have no fields and are a valid target of this trait.
 ///
+/// Template variables are generated as `__TEMPLATE_my_field__` where the serialized value of the
+/// `my_field` field replaces all instances of the template variable.
+///
 /// # Raw Values
 ///
 /// If you have raw values you would like to inject into the template that is not serializable
 /// through JSON, such as a string of JavaScript code, then you can mark a field with `#[raw]` to
 /// make it embedded directly. **Absolutely NO serialization occurs**, the field is just turned into
 /// a string using [`Display`]. As such, fields that are marked `#[raw]` _only_ require [`Display`].
+///
+/// Raw values use `__RAW_my_field__` as the template variable.
+///
+/// ---
 ///
 /// This trait is sealed.
 ///
@@ -68,8 +76,6 @@ pub trait Template: self::private::Sealed {
 /// A [`Template`] with an attached default template.
 ///
 /// Create this automatically with `#[default_template("myfile.js")` on your [`Template`] struct.
-///
-/// This trait is sealed.
 pub trait DefaultTemplate: Template {
     /// The raw static string with the templates contents.
     ///
@@ -78,6 +84,9 @@ pub trait DefaultTemplate: Template {
     const RAW_TEMPLATE: &'static str;
 
     /// Render the serialized template data into the default template.
+    ///
+    /// If this method is implemented manually, it still needs to use [`Template::render`] to be
+    /// serialized correctly.
     fn render_default(&self, options: &Options) -> Result<String> {
         self.render(Self::RAW_TEMPLATE, options)
     }

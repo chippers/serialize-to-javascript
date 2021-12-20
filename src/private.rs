@@ -1,9 +1,10 @@
 use std::convert::TryFrom;
 
-use serde::Serialize;
 use serde_json::value::RawValue;
 
 use crate::{escape_json_parse, Options};
+
+pub use serde::Serialize;
 
 /// Prevent (hidden, not impossible) implementation of crate traits outside this crate.
 pub trait Sealed {}

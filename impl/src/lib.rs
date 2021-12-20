@@ -7,12 +7,17 @@ use quote::{quote, TokenStreamExt};
 use syn::{parse_macro_input, spanned::Spanned};
 
 /// Checks if the passed type implements the passed trait.
-fn trait_check(type_: syn::Type, trait_: TokenStream2) -> TokenStream2 {
+fn trait_check<'l, L>(lifetimes: L, type_: syn::Type, trait_: TokenStream2) -> TokenStream2
+where
+    L: Iterator<Item = &'l syn::LifetimeDef>,
+{
     quote!(
-        const _: fn() = || {
-            fn assert_impl_all<T: ?Sized + #trait_>() {}
-            assert_impl_all::<#type_>();
-        };
+      const _: fn() = || {
+        fn declare_lifetime<#(#lifetimes),*>() {
+          fn assert_impl_all<T: ?Sized + #trait_>() {}
+          assert_impl_all::<#type_>();
+        }
+      };
     )
 }
 
@@ -29,10 +34,11 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
                 match field.ident {
                     Some(ident) => {
                         let templated_field_name = format!("__TEMPLATE_{}__", ident);
+                        let lifetimes = item.generics.lifetimes();
 
                         // we expect self, template, and options bindings to exist
                         let data = if field.attrs.iter().any(|attr| attr.path.is_ident("raw")) {
-                            let trait_check = trait_check(field.ty, quote!(::serde::Serialized));
+                            let trait_check = trait_check(lifetimes, field.ty, quote!(::serialize_to_javascript::private::Serialize));
                             quote!(
                                 #trait_check
 
@@ -43,7 +49,7 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
                                 let data: String = data.into_javascript_string_literal(options);
                             )
                         } else {
-                            let trait_check = trait_check(field.ty, quote!(::std::fmt::Display));
+                            let trait_check = trait_check(lifetimes,field.ty, quote!(::std::fmt::Display));
                             quote!(
                                 #trait_check
                                 let data: String = self.#ident.to_string();
@@ -51,10 +57,13 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
                         };
 
                         replacements.append_all(quote!(
-                            let template = template.replace(
-                                #templated_field_name,
-                                &{#data}
-                            );
+                            let template = {
+                                #data
+                                template.replace(
+                                    #templated_field_name,
+                                    &data
+                                )
+                            };
                         ));
                     }
                     None => {

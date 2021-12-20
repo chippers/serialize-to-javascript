@@ -1,3 +1,20 @@
+//! Serialize [`serde::Serialize`] values to JavaScript.
+//!
+//! Templated names that are replaced inside templates are `__TEMPLATE_my_field__` where `my_field`
+//! is a field on a struct implementing [`Template`].
+//!
+//! ```rust
+//! use serialize_to_javascript::{Template, default_template};
+//! #[derive(Template)]
+//! struct Keygen<'a> {
+//!     key: &'a str,
+//!     length: usize,
+//!
+//!     #[raw]
+//!     optional_script: &'static str
+//! }
+//! ```
+
 use serde_json::value::RawValue;
 pub use serde_json::{Error, Result};
 

@@ -38,6 +38,12 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
 
                         // we expect self, template, and options bindings to exist
                         let data = if field.attrs.iter().any(|attr| attr.path.is_ident("raw")) {
+                            let trait_check = trait_check(lifetimes,field.ty, quote!(::std::fmt::Display));
+                            quote!(
+                                #trait_check
+                                let data: String = self.#ident.to_string();
+                            )
+                        } else {
                             let trait_check = trait_check(lifetimes, field.ty, quote!(::serialize_to_javascript::private::Serialize));
                             quote!(
                                 #trait_check
@@ -47,12 +53,6 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
 
                                 let data: Serialized = NotYetSerialized(&self.#ident).try_into()?;
                                 let data: String = data.into_javascript_string_literal(options);
-                            )
-                        } else {
-                            let trait_check = trait_check(lifetimes,field.ty, quote!(::std::fmt::Display));
-                            quote!(
-                                #trait_check
-                                let data: String = self.#ident.to_string();
                             )
                         };
 

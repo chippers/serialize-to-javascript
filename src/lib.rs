@@ -38,6 +38,7 @@
 //! struct Keygen<'a> {
 //!     key: &'a str,
 //!     length: usize,
+//!
 //!     #[raw]
 //!     optional_script: &'static str,
 //! }

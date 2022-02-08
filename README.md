@@ -36,6 +36,7 @@ use serialize_to_javascript::{default_template, DefaultTemplate, Options, Serial
 struct Keygen<'a> {
     key: &'a str,
     length: usize,
+
     #[raw]
     optional_script: &'static str,
 }

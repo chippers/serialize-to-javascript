@@ -9,6 +9,8 @@ description = "Serialize a serde::Serialize item to a JavaScript literal templat
 license = "MIT OR Apache-2.0"
 edition = "2018"
 rust-version = "1.31"
+repository = "https://github.com/chippers/serialize-to-javascript"
+documentation = "https://docs.rs/serialize-to-javascript"
 
 [dependencies]
 serialize-to-javascript-impl = { version = "=0.1.0", path = "impl" }

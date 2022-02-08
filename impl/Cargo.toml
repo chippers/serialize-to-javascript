@@ -6,6 +6,8 @@ description = "Implementation detail of `serialize-to-javascript`"
 license = "MIT OR Apache-2.0"
 edition = "2018"
 rust-version = "1.31"
+repository = "https://github.com/chippers/serialize-to-javascript"
+documentation = "https://docs.rs/serialize-to-javascript-impl"
 
 [lib]
 proc-macro = true

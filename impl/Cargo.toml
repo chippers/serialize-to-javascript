@@ -1,6 +1,6 @@
 [package]
 name = "serialize-to-javascript-impl"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Chip Reed <chip@chip.sh>"]
 description = "Implementation detail of `serialize-to-javascript`"
 license = "MIT OR Apache-2.0"

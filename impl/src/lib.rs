@@ -21,6 +21,17 @@ where
     )
 }
 
+/// Automatically derive `Template` from a struct with valid input fields.
+///
+/// ```no_run,no_compile
+/// #[derive(Template)]
+/// struct MyTemplate {
+///     serializable_field: usize,
+///
+///     #[raw]
+///     raw_field: &'static str
+/// }
+/// ```
 #[proc_macro_derive(Template, attributes(raw))]
 pub fn derive_template(item: TokenStream) -> TokenStream {
     let item = parse_macro_input!(item as syn::DeriveInput);
@@ -51,10 +62,14 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
                                 #trait_check
 
                                 use ::std::convert::TryInto;
-                                use ::serialize_to_javascript::private::{NotYetSerialized, Serialized};
+                                use ::serialize_to_javascript::{
+                                    private::{NotYetSerialized, SerializedOnce},
+                                    Serialized
+                                };
 
-                                let data: Serialized = NotYetSerialized(&self.#ident).try_into()?;
-                                let data: String = data.into_javascript_string_literal(options);
+                                let data: SerializedOnce = NotYetSerialized(&self.#ident).try_into()?;
+                                let data: Serialized = data.into_javascript_string_literal(options);
+                                let data: String = data.into_string();
                             )
                         };
 
@@ -81,9 +96,11 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
             quote!(
                 impl #impl_generics ::serialize_to_javascript::private::Sealed for #name #ty_generics {}
                 impl #impl_generics ::serialize_to_javascript::Template for #name #ty_generics {
-                    fn render(&self, template: &str, options: &::serialize_to_javascript::Options) -> ::serialize_to_javascript::Result<String> {
+                    fn render(&self, template: &str, options: &::serialize_to_javascript::Options) -> ::serialize_to_javascript::Result<::serialize_to_javascript::Serialized> {
                         #replacements
-                        Ok(template.into())
+                        Ok(unsafe {
+                            ::serialize_to_javascript::Serialized::from_string_unchecked(template.into())
+                        })
                     }
                 }
             )
@@ -100,6 +117,11 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
         .into()
 }
 
+/// Automatically derive `DefaultTemplate` for a `Template` from the passed path.
+///
+/// ```no_run,no_compile
+/// #[default_template("path/to/my_javascript_file.js")]
+/// ```
 #[proc_macro_attribute]
 pub fn default_template(attr: TokenStream, item: TokenStream) -> TokenStream {
     let path = parse_macro_input!(attr as syn::LitStr);

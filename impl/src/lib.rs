@@ -9,7 +9,7 @@ use syn::{parse_macro_input, spanned::Spanned};
 /// Checks if the passed type implements the passed trait.
 fn trait_check<'l, L>(lifetimes: L, type_: syn::Type, trait_: TokenStream2) -> TokenStream2
 where
-    L: Iterator<Item = &'l syn::LifetimeDef>,
+    L: Iterator<Item = &'l syn::LifetimeParam>,
 {
     quote!(
       const _: fn() = || {
@@ -48,7 +48,7 @@ pub fn derive_template(item: TokenStream) -> TokenStream {
                         let lifetimes = item.generics.lifetimes();
 
                         // we expect self, template, and options bindings to exist
-                        let data = if field.attrs.iter().any(|attr| attr.path.is_ident("raw")) {
+                        let data = if field.attrs.iter().any(|attr| attr.path().is_ident("raw")) {
                             templated_field_name = format!("__RAW_{}__", ident);
                             let trait_check = trait_check(lifetimes,field.ty, quote!(::std::fmt::Display));
                             quote!(
